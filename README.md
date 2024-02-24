@@ -3,7 +3,7 @@
 # SupaNuxt SaaS Drizzle Edition
 
 > [!WARNING]  
-> This project is currently in development and not ready for production use.
+> This project is currently in alpha testing and not ready for production use.
 
 This repo is a port of an [original Prisma version](https://github.com/JavascriptMick/supanuxt-saas) to Drizzle. I has several [Issues](DRIZZLEISSUES.md) with the port.
 
