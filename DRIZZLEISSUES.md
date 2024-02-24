@@ -205,9 +205,114 @@ In Drizzle, I gotta create rows and frig around with ids...
       .returning({ insertedId: membership.id });
 ```
 
-### In schema definition not null is not the default
+### Enums are a mess in both Orms but Prisma at least has a workaround
 
-Ok fine but even on types that are defined as a list? Thats counter intuitive...
+Postgres supports enum types...
+
+```
+CREATE TYPE "ACCOUNT_ACCESS" AS ENUM('READ_ONLY', 'READ_WRITE', 'ADMIN', 'OWNER');
+...
+CREATE TABLE IF NOT EXISTS "membership" (
+	...
+	"access" "ACCOUNT_ACCESS" DEFAULT 'READ_ONLY' NOT NULL,
+```
+
+In Prisma, I can do this in the schema..
+
+```
+enum ACCOUNT_ACCESS {
+  READ_ONLY
+  READ_WRITE
+  ADMIN
+  OWNER
+}
+```
+
+and then this horrible but functional kludge to create a type that is based on the schema definition and works everywhere you need to use the enum ...
+
+```
+// Workaround for prisma issue (https://github.com/prisma/prisma/issues/12504#issuecomment-1147356141)
+
+// Import original enum as type
+import type { ACCOUNT_ACCESS as ACCOUNT_ACCESS_ORIGINAL } from '@prisma/client';
+
+// Guarantee that the implementation corresponds to the original type
+export const ACCOUNT_ACCESS: { [k in ACCOUNT_ACCESS_ORIGINAL]: k } = {
+  READ_ONLY: 'READ_ONLY',
+  READ_WRITE: 'READ_WRITE',
+  ADMIN: 'ADMIN',
+  OWNER: 'OWNER'
+} as const;
+
+// Re-exporting the original type with the original name
+export type ACCOUNT_ACCESS = ACCOUNT_ACCESS_ORIGINAL;
+```
+
+in Drizzle, you need to use helper method pgEnum to create a thing which is NOT a type...
+
+```
+export const accountAccessEnum = pgEnum('ACCOUNT_ACCESS', [
+  'OWNER',
+  'ADMIN',
+  'READ_WRITE',
+  'READ_ONLY'
+]);
+```
+
+and then stick it in the schema like this...
+
+```
+export const membership = pgTable(
+  'membership',
+  {
+    ...
+    access: accountAccessEnum('access')
+      .default(ACCOUNT_ACCESS.READ_ONLY)
+      .notNull(),
+```
+
+but AFAIK, there is no way to infer a type for this enum.
+I tried a bunch of different things but ended creating a completely duplicate type...
+
+```
+export enum ACCOUNT_ACCESS {
+  OWNER = 'OWNER',
+  ADMIN = 'ADMIN',
+  READ_WRITE = 'READ_WRITE',
+  READ_ONLY = 'READ_ONLY'
+}
+```
+
+which works in some cases...
+
+```
+await drizzle_client
+    .insert(membership)
+    .values({
+        account_id: newAccountId[0].insertedId,
+        user_id: newUserId[0].insertedId,
+        access: ACCOUNT_ACCESS.OWNER
+    })
+    .returning({ insertedId: membership.id });
+```
+
+but not others [example](https://github.com/JavascriptMick/supanuxt-saas-drizzle/blob/7919f6a32c83ae114fb5041fdad3d109149d3b16/server/trpc/trpc.ts#L80).
+
+```
+    const accessList: ACCOUNT_ACCESS[] = [ACCOUNT_ACCESS.OWNER, ACCOUNT_ACCESS.ADMIN]
+
+    //doesn't work, activeMembership.access is not an enum
+    if (!access.includes(activeMembership.access)) ....
+
+    //need to do this map thing
+    if (!access.map(a => a.valueOf()).includes(activeMembership.access))....
+```
+
+so, in both cases, it's more difficult than it needs to be but at least Prisma has a workaround that works.
+
+### MINOR: In schema definition not null is not the default
+
+Note that in Prisma, types are not nullable by default and you add a ? to make them nullable, in Drizzle is opposite...
 
 In Prisma
 
