@@ -12,5 +12,4 @@ node_modules
 .env_example
 dist
 junk
-prisma/schema.prisma
 assets

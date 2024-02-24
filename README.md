@@ -1,14 +1,16 @@
 ![SupaNuxt SaaS](assets/images/supanuxt_logo_200.png)
 
-# SupaNuxt SaaS
+# SupaNuxt SaaS Drizzle Edition
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/19d67f94-afdc-4b79-8490-600be26e85de/deploy-status)](https://app.netlify.com/sites/nuxt3-saas-boilerplate/deploys)
+This repo is a port of an [original Prisma version](https://github.com/JavascriptMick/supanuxt-saas) to Drizzle. I has several [Issues](DRIZZLEISSUES.md) with the port.
+
+Both the Prisma and Drizzle editions will be maintained going forward.
 
 ## Demo Sites
 
-Demo site [here](https://nuxt3-saas-boilerplate.netlify.app/)
+(Prisma) Demo site [here](https://nuxt3-saas-boilerplate.netlify.app/)
 
-Pottery Helper [here](https://potteryhelper.com/)
+(Prisma) Pottery Helper [here](https://potteryhelper.com/)
 
 ## Community
 
@@ -18,7 +20,7 @@ Discord [here](https://discord.gg/3hWPDTA4kD)
 
 - Nuxt 3
 - Supabase (auth including OAuth + Postgresql instance)
-- Prisma (schema management + Strongly typed client)
+- Drizzle (schema management + Strongly typed client)
 - TRPC (server/client communication with Strong types, SSR compatible)
 - Pinia (state Store)
 - Stripe (payments including webhook integration)
@@ -32,14 +34,14 @@ Discord [here](https://discord.gg/3hWPDTA4kD)
 - [x] Social Signon (e.g. google) via Supabase, Full list of available [providers](https://supabase.com/docs/guides/auth#providers)
 - [x] Email/Password Signon via Supabase
 - [x] Password recovery
-- [x] User roles and permissions (admin, regular user, etc. roles defined in the [Prisma Schema](/prisma/schema.prisma))
+- [x] User roles and permissions (admin, regular user, etc. roles defined in the [Drizzle Schema](/drizzle/schema.ts))
 - [x] User Email captured on initial login
 - [x] Initial plan and plan period controled via config to allow either a trial plan or a 'No Plan' for initial users
 - [x] Edit Account Name from Account Page
 
 ### Schema and DB Management
 
-- [x] Prisma based Schema Management
+- [x] Drizzle based Schema Management
 - [x] Supabase integration for DB
 - [x] DB Seed Script to setup plan information including Plan and Stripe Product information
 
@@ -51,8 +53,8 @@ Discord [here](https://discord.gg/3hWPDTA4kD)
 
 ### Multi-Modal State Management
 
-- [x] SPA type pages (e.g. [Dashboard](/pages/dashboard.vue)) - postgresql(supabase) -> Prisma -> Service Layer for Business Logic -> TRPC -> Pinia -> UI
-- [x] SSR type pages (e.g. [Note](/pages/notes/[note_id].vue)) - postgresql(supabase) -> Prisma -> Service Layer for Business Logic -> TRPC -> UI
+- [x] SPA type pages (e.g. [Dashboard](/pages/dashboard.vue)) - postgresql(supabase) -> Drizzle -> Service Layer for Business Logic -> TRPC -> Pinia -> UI
+- [x] SSR type pages (e.g. [Note](/pages/notes/[note_id].vue)) - postgresql(supabase) -> Drizzle -> Service Layer for Business Logic -> TRPC -> UI
 
 ### Multi User Accounts (Teams)
 
@@ -132,7 +134,7 @@ The focus is on separation of concerns and avoiding vendor lock in.
 
 _Composition over options API_ - I have decided to use composition api and setup functions accross the board including components, pages and Pinia stores. I was resistant at first, especially with the stores as I was used to Vuex but have come to the conclusion that it is easier to go one approach all over. It's also the latest and greatest and folks don't like to use a starter that starts behind the cutting edge.
 
-_Prisma over Supabase API_ - I went with Prisma for direct DB access rather than use the Supabase client. This is Primarily to avoid lock-in with Supabase too much. Supabase is great but I thought burdening my users with a future situation where it's difficult to move off it wouldn't be very cool. Also, I really like how Prisma handles schema changes and updates to the client layer and types with just two bash commands, after using other approaches, I find this super smooth.
+_Drizzle over Supabase API_ - I went with Drizzle for direct DB access rather than use the Supabase client. This is Primarily to avoid lock-in with Supabase too much. Supabase is great but I thought burdening my users with a future situation where it's difficult to move off it wouldn't be very cool.
 
 _Trpc over REST_ - Primarily for full thickness types without duplication on the client. Also I think the remote procedure call paradigm works well. Note however that I still include a [REST endpoint example](/server/api/note.ts) for flexibility. My preference for mobile is Flutter and there is not a Trpc client for Flutter that i'm aware off so it was important for me to make sure REST works also.
 
@@ -162,7 +164,7 @@ This solution uses Stripe for Subscription payments.
 
 1. Go to [Stripe](https://stripe.com) and setup your business (Free Tier is fine to start)
 2. Create 2 products ('Team Plan' and 'Individual Plan') each with a single price and note the Product ID's and Price ID's
-3. Edit the [seed.ts](/prisma/seed.ts) file and replace the stripe_product_id values with the Product ID's from 2)
+3. Edit the [seed.ts](/drizzle/seed.ts) file and replace the stripe_product_id values with the Product ID's from 2)
 
 ```typescript
     create: {
@@ -194,18 +196,19 @@ stripe login -i
 
 provide the api key found in step 5) above
 
-### Setup Database (Prisma)
+### Setup Database (Drizzle)
 
-This solution uses Prisma to both manage changes and connect to the Postgresql database provided by Supabase. Your Supabase DB will be empty by default so you need to hydrate the schema and re-generate the local prisma client.
+This solution uses Drizzle to both manage changes and connect to the Postgresql database provided by Supabase. Your Supabase DB will be empty by default so you need to hydrate the schema.
 
 ```
-npx prisma db push
-npx prisma generate
-npm install @prisma/client --save-dev
-npx prisma db seed
+npm run db:generate
+npm run db:migrate
+npm run db:seed
 ```
 
 ...you should now have a a Plan table with 3 rows and a bunch of empty tables in your Supabase DB
+
+_Note_ Beyond these commands, schema management is up to you. You might want to remove the migrations folder from .gitignore and start checking in your migration metadata, not sure.
 
 ## Developement Setup
 

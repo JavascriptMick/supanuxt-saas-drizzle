@@ -1,5 +1,5 @@
 {
-  "name": "supanuxt-saas",
+  "name": "supanuxt-saas-drizzle",
   "version": "1.4.3",
   "author": {
     "name": "Michael Dausmann",
@@ -8,27 +8,27 @@
   },
   "license": "MIT",
   "private": true,
-  "prisma": {
-    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
-  },
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "prisma generate && nuxt prepare",
-    "test": "vitest"
+    "postinstall": "nuxt prepare",
+    "test": "vitest",
+    "db:generate": "drizzle-kit generate:pg --schema ./drizzle/schema.ts --out=./drizzle/migrations",
+    "db:migrate": "npx vite-node ./drizzle/migrate.ts",
+    "db:seed": "npx vite-node ./drizzle/seed.ts"
   },
   "devDependencies": {
     "@nuxt/test-utils": "^3.11.0",
     "@nuxtjs/supabase": "^1.1.6",
     "@nuxtjs/tailwindcss": "^6.11.4",
-    "@prisma/client": "^5.9.1",
     "@tailwindcss/typography": "^0.5.10",
     "@types/node": "^20.11.19",
+    "dotenv": "^16.4.5",
+    "drizzle-kit": "^0.20.14",
     "nuxt": "^3.10.2",
     "nuxt-icon": "^0.6.8",
-    "prisma": "^5.9.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
     "vitest": "^1.3.0"
@@ -38,9 +38,11 @@
     "@trpc/client": "^10.45.1",
     "@trpc/server": "^10.45.1",
     "daisyui": "^4.7.2",
+    "drizzle-orm": "^0.29.3",
     "generate-password-ts": "^1.6.5",
     "openai": "^4.28.0",
     "pinia": "^2.1.7",
+    "postgres": "^3.4.3",
     "stripe": "^14.17.0",
     "superjson": "^2.2.1",
     "trpc-nuxt": "^0.10.19",

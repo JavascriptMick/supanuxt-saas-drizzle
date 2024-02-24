@@ -8,3 +8,4 @@ node_modules
 dist
 junk
 .DS_Store
+migrations

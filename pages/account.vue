@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { storeToRefs } from 'pinia';
-  import { ACCOUNT_ACCESS } from '~~/prisma/account-access-enum';
+  import { ACCOUNT_ACCESS } from '~~/drizzle/schema';
 
   const accountStore = useAccountStore();
   const { activeMembership, activeAccountMembers } = storeToRefs(accountStore);
@@ -60,9 +60,7 @@
 
       <div class="flex gap-4 items-center">
         <span class="font-bold w-32">Current Period Ends:</span>
-        <span>{{
-          formatDate(activeMembership?.account.current_period_ends)
-        }}</span>
+        <span>{{ activeMembership?.account.current_period_ends }}</span>
       </div>
 
       <div class="flex gap-4 items-center">

@@ -9,7 +9,7 @@
  */
 import { initTRPC, TRPCError } from '@trpc/server';
 import type { Context } from './context';
-import { ACCOUNT_ACCESS } from '~~/prisma/account-access-enum';
+import { ACCOUNT_ACCESS } from '~~/drizzle/schema';
 import superjson from 'superjson';
 import { AccountLimitError } from '~~/lib/services/errors';
 
@@ -75,7 +75,10 @@ const isMemberWithAccessesForActiveAccountId = (access: ACCOUNT_ACCESS[]) =>
       });
     }
 
-    if (access.length > 0 && !access.includes(activeMembership.access)) {
+    if (
+      access.length > 0 &&
+      !access.map(a => a.valueOf()).includes(activeMembership.access)
+    ) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
         message: `activeMembership ${activeMembership?.id} has insufficient access (${activeMembership?.access})`

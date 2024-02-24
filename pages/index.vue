@@ -67,8 +67,8 @@
                 <p class="mt-2 text-base text-gray-500">Relational Database</p>
               </li>
               <li>
-                <Icon name="logos:prisma" class="h-12 w-12 mb-2" />
-                <h3 class="text-xl font-medium text-gray-900">Prisma</h3>
+                <Icon name="simple-icons:drizzle" class="h-12 w-12 mb-2" />
+                <h3 class="text-xl font-medium text-gray-900">Drizzle</h3>
                 <p class="mt-2 text-base text-gray-500">
                   Schema management + Strongly typed client
                 </p>
@@ -154,9 +154,9 @@
           <div class="md:w-1/2">
             <h3 class="text-xl font-bold mb-4">DB Schema Management</h3>
             <p class="mb-4">
-              We use Prisma for schema management to make sure you can easily
+              We use Drizzle for schema management to make sure you can easily
               manage and keep track of your database schema. We also utilise
-              Prisma based strong types which, with some help from TRPC,
+              Drizzle based strong types which, with some help from TRPC,
               penetrate the entire stack all the way to the web front end. This
               ensures that you can move fast with your feature development,
               alter schema and have those type changes instantly available and

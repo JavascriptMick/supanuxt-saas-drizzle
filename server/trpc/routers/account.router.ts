@@ -7,7 +7,7 @@ import {
   protectedProcedure,
   ownerProcedure
 } from '../trpc';
-import { ACCOUNT_ACCESS } from '~~/prisma/account-access-enum';
+import { ACCOUNT_ACCESS, type Membership } from '~~/drizzle/schema';
 import { z } from 'zod';
 import { AccountService } from '~~/lib/services/account.service';
 import type { MembershipWithAccount } from '~~/lib/services/service.types';
@@ -103,11 +103,10 @@ export const accountRouter = router({
   rejectPendingMembership: adminProcedure
     .input(z.object({ membership_id: z.number() }))
     .query(async ({ ctx, input }) => {
-      const membership: MembershipWithAccount =
-        await AccountService.deleteMembership(
-          ctx.activeAccountId!,
-          input.membership_id
-        );
+      const membership: Membership = await AccountService.deleteMembership(
+        ctx.activeAccountId!,
+        input.membership_id
+      );
       return {
         membership
       };
@@ -115,11 +114,10 @@ export const accountRouter = router({
   deleteMembership: ownerProcedure
     .input(z.object({ membership_id: z.number() }))
     .query(async ({ ctx, input }) => {
-      const membership: MembershipWithAccount =
-        await AccountService.deleteMembership(
-          ctx.activeAccountId!,
-          input.membership_id
-        );
+      const membership: Membership = await AccountService.deleteMembership(
+        ctx.activeAccountId!,
+        input.membership_id
+      );
       return {
         membership
       };

@@ -1,4 +1,4 @@
-import { ACCOUNT_ACCESS } from '~~/prisma/account-access-enum';
+import { ACCOUNT_ACCESS } from '~~/drizzle/schema';
 import Stripe from 'stripe';
 import { AccountService } from '~~/lib/services/account.service';
 import type { AccountWithMembers } from '~~/lib/services/service.types';

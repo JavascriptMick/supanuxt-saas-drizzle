@@ -1,4 +1,4 @@
-import { ACCOUNT_ACCESS } from '~~/prisma/account-access-enum';
+import { ACCOUNT_ACCESS } from '~~/drizzle/schema';
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type {

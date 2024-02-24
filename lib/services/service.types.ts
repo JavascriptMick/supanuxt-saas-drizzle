@@ -1,39 +1,18 @@
-import { Prisma } from '@prisma/client';
+import type { InferResultType } from '~/drizzle/relation.types';
 
-export const membershipWithAccount = Prisma.validator<Prisma.MembershipArgs>()({
-  include: { account: true }
-});
-export type MembershipWithAccount = Prisma.MembershipGetPayload<
-  typeof membershipWithAccount
+export type MembershipWithAccount = InferResultType<
+  'membership',
+  { account: true }
 >;
 
-export const membershipWithUser = Prisma.validator<Prisma.MembershipArgs>()({
-  include: { user: true }
-});
-export type MembershipWithUser = Prisma.MembershipGetPayload<
-  typeof membershipWithUser
+export type MembershipWithUser = InferResultType<'membership', { user: true }>;
+
+export type FullDBUser = InferResultType<
+  'user',
+  { memberships: { with: { account: true } } }
 >;
 
-export const fullDBUser = Prisma.validator<Prisma.UserArgs>()({
-  include: {
-    memberships: {
-      include: {
-        account: true
-      }
-    }
-  }
-});
-export type FullDBUser = Prisma.UserGetPayload<typeof fullDBUser>; //TODO - I wonder if this could be replaced by just user level info
-
-export const accountWithMembers = Prisma.validator<Prisma.AccountArgs>()({
-  include: {
-    members: {
-      include: {
-        user: true
-      }
-    }
-  }
-});
-export type AccountWithMembers = Prisma.AccountGetPayload<
-  typeof accountWithMembers
->; //TODO - I wonder if this could just be a list of full memberships
+export type AccountWithMembers = InferResultType<
+  'account',
+  { members: { with: { user: true } } }
+>;
