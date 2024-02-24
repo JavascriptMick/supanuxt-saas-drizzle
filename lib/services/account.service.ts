@@ -104,7 +104,7 @@ export namespace AccountService {
         .update(account)
         .set({
           stripe_subscription_id,
-          current_period_ends: current_period_ends.toDateString(),
+          current_period_ends,
           ai_gen_count: 0
         })
         .where(eq(account.id, this_account.id))
@@ -115,7 +115,7 @@ export namespace AccountService {
         .update(account)
         .set({
           stripe_subscription_id,
-          current_period_ends: current_period_ends.toDateString(),
+          current_period_ends,
           plan_id: paid_plan.id,
           features: paid_plan.features,
           max_notes: paid_plan.max_notes,
@@ -417,15 +417,15 @@ export namespace AccountService {
 
     if (
       this_account.plan_name === config.initialPlanName &&
-      new Date(this_account.current_period_ends) < new Date()
+      this_account.current_period_ends < new Date()
     ) {
       const updatedAccount = await drizzle_client
         .update(account)
         .set({
           current_period_ends: UtilService.addMonths(
-            new Date(this_account.current_period_ends),
+            this_account.current_period_ends,
             1
-          ).toDateString(),
+          ),
           // reset anything that is affected by the rollover
           ai_gen_count: 0
         })

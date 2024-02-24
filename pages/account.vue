@@ -60,7 +60,9 @@
 
       <div class="flex gap-4 items-center">
         <span class="font-bold w-32">Current Period Ends:</span>
-        <span>{{ activeMembership?.account.current_period_ends }}</span>
+        <span>{{
+          formatDate(activeMembership?.account.current_period_ends)
+        }}</span>
       </div>
 
       <div class="flex gap-4 items-center">

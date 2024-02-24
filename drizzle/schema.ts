@@ -84,7 +84,7 @@ export const account = pgTable(
     name: text('name').notNull(),
     current_period_ends: timestamp('current_period_ends', {
       precision: 3,
-      mode: 'string'
+      mode: 'date'
     })
       .defaultNow()
       .notNull(),

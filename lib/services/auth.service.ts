@@ -77,7 +77,7 @@ export namespace AuthService {
         current_period_ends: UtilService.addMonths(
           new Date(),
           config.initialPlanActiveMonths
-        ).toDateString(),
+        ),
         plan_id: trialPlan.id,
         features: trialPlan.features,
         max_notes: trialPlan.max_notes,
