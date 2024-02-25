@@ -6,46 +6,45 @@ I encountered several things that I didn't like very much.
 
 In the Prisma version, I can do this in service types...
 
-```
-    export const accountWithMembers = Prisma.validator<Prisma.AccountArgs>()({
+```ts
+export const accountWithMembers = Prisma.validator<Prisma.AccountArgs>()({
     include: {
         members: {
-        include: {
-            user: true
-        }
+            include: {
+                user: true
+            }
         }
     }
-    });
-    export type AccountWithMembers = Prisma.AccountGetPayload<
-    typeof accountWithMembers
-    >
+});
+
+export type AccountWithMembers = Prisma.AccountGetPayload<typeof accountWithMembers>
 ```
 
 This exports both a type (AccountWithMembers) and a handy dandy (accountWithMembers) constant I can use in my queries to define a where clause that faithfully and completely matches the type definition...
 
-```
-    await prisma_client.account.findFirstOrThrow({
-        where: { id: account_id },
-        ...accountWithMembers
-    });
+```ts
+await prisma_client.account.findFirstOrThrow({
+    where: { id: account_id },
+    ...accountWithMembers
+});
 ```
 
 in Drizzle, I can use a crazy workaround dynamic type thingo (drizzle/relation.types.ts) to get my nested type...
 
-```
-    export type AccountWithMembers = InferResultType<
+```ts
+export type AccountWithMembers = InferResultType<
     'account',
     { members: { with: { user: true } } }
-    >;
+>;
 ```
 
 but I couldn't figure out how to DRY the where clause bit, so the service method specifies it again...
 
-```
-    await drizzle_client.query.account.findFirst({
-        where: eq(account.id, account_id),
-        with: { members: { with: { user: true } } }
-    });
+```ts
+await drizzle_client.query.account.findFirst({
+    where: eq(account.id, account_id),
+    with: { members: { with: { user: true } } }
+});
 ```
 
 Issue is mentioned in github https://github.com/drizzle-team/drizzle-orm/issues/695
@@ -54,38 +53,38 @@ Issue is mentioned in github https://github.com/drizzle-team/drizzle-orm/issues/
 
 This is just annoying, in Drizzle, I need to check and throw all over the place.
 
-```
-    const this_account = await drizzle_client.query.account.findFirst({
-        where: eq(account.id, account_id),
-        with: { members: { with: { user: true } } }
-    });
+```ts
+const this_account = await drizzle_client.query.account.findFirst({
+    where: eq(account.id, account_id),
+    with: { members: { with: { user: true } } }
+});
 
-    if (!this_account) {
-        throw new Error('Account not found.');
-    }
+if (!this_account) {
+    throw new Error('Account not found.');
+}
 ```
 
 ### Single updates and deletions return an array instead of a single object
 
 In Prisma, an update of a single row returns a single object...
 
-```
-  export async function updateAccountStipeCustomerId(
+```ts
+export async function updateAccountStipeCustomerId(
     account_id: number,
     stripe_customer_id: string
-  ) {
+) {
     return await prisma_client.account.update({
       where: { id: account_id },
       data: {
         stripe_customer_id
       }
     });
-  }
+}
 ```
 
 in Drizzle, updates always return an array. I had a look at the Drizzle Discord and, hilariously, this question was asked many times with no answer.
 
-```
+```ts
   export async function updateAccountStipeCustomerId(
     account_id: number,
     stripe_customer_id: string
@@ -105,29 +104,29 @@ It's just a quality of life thing but I have lots of these single row updates so
 
 In Prisma, I can update or delete and return a deeply nested type in one statement
 
-```
-    export async function deleteUser(user_id: number): Promise<FullDBUser> {
-        return prisma_client.user.delete({
-            where: { id: user_id },
-            ...fullDBUser
-        });
-    }
+```ts
+export async function deleteUser(user_id: number): Promise<FullDBUser> {
+    return prisma_client.user.delete({
+        where: { id: user_id },
+        ...fullDBUser
+    });
+}
 ```
 
 In Drizzle, while I can workaround this for updates by doing an update and select...
 
 ...for deletes, it doesn't seem to be possible.. maybe a select and delete?
 
-```
-    export async function deleteUser(user_id: number): Promise<User> {
-        const deletedUser = await drizzle_client
-            .delete(user)
-            .where(eq(user.id, user_id))
-            .returning();
+```ts
+export async function deleteUser(user_id: number): Promise<User> {
+    const deletedUser = await drizzle_client
+        .delete(user)
+        .where(eq(user.id, user_id))
+        .returning();
 
-        // This feels silly
-        return deletedUser[0] as User;
-    }
+    // This feels silly
+    return deletedUser[0] as User;
+}
 ```
 
 ### Nested Create doesn't exist
@@ -135,7 +134,7 @@ In Drizzle, while I can workaround this for updates by doing an update and selec
 In Prisma, I can create a deeply nested object into multiple tables with one statement. For example, here is me creating a user, account and the membership
 record (a join table) between the user and the account in one go... much nice.
 
-```
+```ts
 prisma_client.user.create({
       data: {
         supabase_uid: supabase_uid,
@@ -168,41 +167,41 @@ prisma_client.user.create({
 
 In Drizzle, I gotta create rows and frig around with ids...
 
-```
-     const newAccountId: { insertedId: number }[] = await drizzle_client
-      .insert(account)
-      .values({
-        name: display_name,
-        current_period_ends: UtilService.addMonths(
-          new Date(),
-          config.initialPlanActiveMonths
-        ).toDateString(),
-        plan_id: trialPlan.id,
-        features: trialPlan.features,
-        max_notes: trialPlan.max_notes,
-        max_members: trialPlan.max_members,
-        plan_name: trialPlan.name,
-        join_password: join_password
-      })
-      .returning({ insertedId: account.id });
+```ts
+ const newAccountId: { insertedId: number }[] = await drizzle_client
+  .insert(account)
+  .values({
+    name: display_name,
+    current_period_ends: UtilService.addMonths(
+      new Date(),
+      config.initialPlanActiveMonths
+    ).toDateString(),
+    plan_id: trialPlan.id,
+    features: trialPlan.features,
+    max_notes: trialPlan.max_notes,
+    max_members: trialPlan.max_members,
+    plan_name: trialPlan.name,
+    join_password: join_password
+  })
+  .returning({ insertedId: account.id });
 
-    const newUserId: { insertedId: number }[] = await drizzle_client
-      .insert(user)
-      .values({
-        supabase_uid: supabase_uid,
-        display_name: display_name,
-        email: email
-      })
-      .returning({ insertedId: user.id });
+const newUserId: { insertedId: number }[] = await drizzle_client
+  .insert(user)
+  .values({
+    supabase_uid: supabase_uid,
+    display_name: display_name,
+    email: email
+  })
+  .returning({ insertedId: user.id });
 
-    const newMembershipId: { insertedId: number }[] = await drizzle_client
-      .insert(membership)
-      .values({
-        account_id: newAccountId[0].insertedId, // Use the ids from the other inserted records to create a join table entry
-        user_id: newUserId[0].insertedId,
-        access: ACCOUNT_ACCESS.OWNER
-      })
-      .returning({ insertedId: membership.id });
+const newMembershipId: { insertedId: number }[] = await drizzle_client
+  .insert(membership)
+  .values({
+    account_id: newAccountId[0].insertedId, // Use the ids from the other inserted records to create a join table entry
+    user_id: newUserId[0].insertedId,
+    access: ACCOUNT_ACCESS.OWNER
+  })
+  .returning({ insertedId: membership.id });
 ```
 
 ### Enums are a mess in both Orms but Prisma at least has a workaround
@@ -316,7 +315,7 @@ Note that in Prisma, types are not nullable by default and you add a ? to make t
 
 In Prisma
 
-```
+```ts
 
     model Account {
         ...
@@ -325,8 +324,7 @@ In Prisma
 ```
 
 In Drizzle
-
-```
+```ts
     export const account = pgTable(
         'account',
         {
